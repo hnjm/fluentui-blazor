@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop;
 using static Microsoft.FluentUI.AspNetCore.Components.Utilities.LinkerFlags;
@@ -72,7 +76,7 @@ public abstract class JSModule : IAsyncDisposable
         {
             try
             {
-                IJSObjectReference? module = await _moduleTask.Value;
+                var module = await _moduleTask.Value;
                 await module.DisposeAsync().ConfigureAwait(false);
             }
             catch (InvalidOperationException)

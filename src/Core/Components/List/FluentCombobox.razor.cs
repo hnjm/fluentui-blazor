@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------------
-// MIT License - Copyright (c) Microsoft Corporation. All rights reserved.
+// This file is licensed to you under the MIT License.
 // ------------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Components;
@@ -13,7 +13,6 @@ namespace Microsoft.FluentUI.AspNetCore.Components;
 public partial class FluentCombobox<TOption> : ListComponentBase<TOption>, IAsyncDisposable where TOption : notnull
 {
     private const string JAVASCRIPT_FILE = "./_content/Microsoft.FluentUI.AspNetCore.Components/Components/List/FluentCombobox.razor.js";
-    private bool _hasInitializedParameters;
 
     /// <summary />
     [Inject]
@@ -84,61 +83,56 @@ public partial class FluentCombobox<TOption> : ListComponentBase<TOption>, IAsyn
     {
         parameters.SetParameterProperties(this);
 
-        if (!_hasInitializedParameters)
+        var isSetSelectedOption = false;
+        TOption? newSelectedOption = default;
+
+        foreach (var parameter in parameters)
         {
-
-            var isSetSelectedOption = false;
-            TOption? newSelectedOption = default;
-
-            foreach (var parameter in parameters)
+            switch (parameter.Name)
             {
-                switch (parameter.Name)
-                {
-                    case nameof(SelectedOption):
-                        isSetSelectedOption = true;
-                        newSelectedOption = (TOption?)parameter.Value;
-                        break;
-                    default:
-                        break;
-                }
+                case nameof(SelectedOption):
+                    isSetSelectedOption = true;
+                    newSelectedOption = (TOption?)parameter.Value;
+                    break;
+                default:
+                    break;
             }
+        }
 
-            if (isSetSelectedOption && !Equals(_currentSelectedOption, newSelectedOption))
+        if (isSetSelectedOption && !Equals(_currentSelectedOption, newSelectedOption))
+        {
+            if (Items != null)
             {
-                if (Items != null)
+                if (Items.Contains(newSelectedOption))
                 {
-                    if (Items.Contains(newSelectedOption))
-                    {
-                        _currentSelectedOption = newSelectedOption;
-                    }
-                    else if (OptionSelected != null && newSelectedOption != null && OptionSelected(newSelectedOption))
-                    {
-                        // The selected option might not be part of the Items list. But we can use OptionSelected to compare the current option.
-                        _currentSelectedOption = newSelectedOption;
-                    }
-                    else
-                    {
-                        // If the selected option is not in the list of items, reset the selected option
-                        _currentSelectedOption = SelectedOption = default;
-                        await SelectedOptionChanged.InvokeAsync(SelectedOption);
-                    }
+                    _currentSelectedOption = newSelectedOption;
+                }
+                else if (OptionSelected != null && newSelectedOption != null && OptionSelected(newSelectedOption))
+                {
+                    // The selected option might not be part of the Items list. But we can use OptionSelected to compare the current option.
+                    _currentSelectedOption = newSelectedOption;
                 }
                 else
                 {
-                    // If Items is null, we don't know if the selected option is in the list of items, so we just set it
-                    _currentSelectedOption = newSelectedOption;
-                }
-
-                // Sync Value from selected option.
-                // If it is null, we set it to the default value so the attribute is not deleted & the webcomponents don't throw an exception
-                var value = GetOptionValue(_currentSelectedOption) ?? string.Empty;
-                if (Value != value)
-                {
-                    Value = value;
-                    await ValueChanged.InvokeAsync(Value);
+                    // If the selected option is not in the list of items, reset the selected option
+                    _currentSelectedOption = SelectedOption = default;
+                    await SelectedOptionChanged.InvokeAsync(SelectedOption);
                 }
             }
-            _hasInitializedParameters = true;
+            else
+            {
+                // If Items is null, we don't know if the selected option is in the list of items, so we just set it
+                _currentSelectedOption = newSelectedOption;
+            }
+
+            // Sync Value from selected option.
+            // If it is null, we set it to the default value so the attribute is not deleted & the webcomponents don't throw an exception
+            var value = GetOptionValue(_currentSelectedOption) ?? string.Empty;
+            if (Value != value)
+            {
+                Value = value;
+                await ValueChanged.InvokeAsync(Value);
+            }
         }
 
         await base.SetParametersAsync(ParameterView.Empty);
@@ -159,7 +153,7 @@ public partial class FluentCombobox<TOption> : ListComponentBase<TOption>, IAsyn
             }
             else
             {
-                await OnSelectedItemChangedHandlerAsync(item);
+                await InvokeAsync(async () => await OnSelectedItemChangedHandlerAsync(item));
             }
 
             if (Value != value)
@@ -169,11 +163,11 @@ public partial class FluentCombobox<TOption> : ListComponentBase<TOption>, IAsyn
         }
     }
 
-    protected override string? GetOptionValue(TOption? item)
+    private string? GetComboboxContent()
     {
-        if (item != null)
+        if (SelectedOption != null)
         {
-            return OptionText.Invoke(item) ?? OptionValue.Invoke(item) ?? item.ToString();
+            return OptionText.Invoke(SelectedOption) ?? OptionValue.Invoke(SelectedOption) ?? SelectedOption.ToString();
         }
         else
         {
@@ -183,11 +177,20 @@ public partial class FluentCombobox<TOption> : ListComponentBase<TOption>, IAsyn
 
     public new async ValueTask DisposeAsync()
     {
-        if (Module is not null && !string.IsNullOrEmpty(Id))
+        try
         {
-            await Module.InvokeVoidAsync("detachIndicatorClickHandler", Id);
-            await Module.DisposeAsync();
+            if (Module is not null && !string.IsNullOrEmpty(Id))
+            {
+                await Module.InvokeVoidAsync("detachIndicatorClickHandler", Id);
+                await Module.DisposeAsync();
+            }
+            await base.DisposeAsync();
         }
-        await base.DisposeAsync();
+        catch (Exception ex) when (ex is JSDisconnectedException ||
+                                   ex is OperationCanceledException)
+        {
+            // The JSRuntime side may routinely be gone already if the reason we're disposing is that
+            // the client disconnected. This is not an error.
+        }
     }
 }

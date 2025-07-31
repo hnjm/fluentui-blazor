@@ -1,15 +1,17 @@
-@namespace Microsoft.FluentUI.AspNetCore.Components
+﻿@namespace Microsoft.FluentUI.AspNetCore.Components
 @inherits FluentComponentBase
 <fluent-menu-item @ref=Element
 				  class="@Class"
 				  style="@Style"
 				  id="@Id"
-				  disabled="@Disabled" 
+				  disabled="@Disabled"
 				  expanded=@Expanded
 				  role="@GetRole()"
 				  checked="@Checked"
+                  @onchange="@OnChangeHandlerAsync"
 				  @onclick="@OnClickHandlerAsync"
-				  @attributes="AdditionalAttributes">
+                  @attributes="AdditionalAttributes"
+                  @onkeydown="@OnKeyDownHandlerAsync">
 	@Label
 	@ChildContent
 	@if (MenuItems != null)

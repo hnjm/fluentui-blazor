@@ -1,12 +1,13 @@
 // ------------------------------------------------------------------------
-// MIT License - Copyright (c) Microsoft Corporation. All rights reserved.
+// This file is licensed to you under the MIT License.
 // ------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components.Extensions;
 using Microsoft.FluentUI.AspNetCore.Components.Utilities;
 using Microsoft.JSInterop;
-using System.Text.Json;
 
 namespace Microsoft.FluentUI.AspNetCore.Components;
 
@@ -88,6 +89,7 @@ public partial class FluentOverflow : FluentComponentBase, IAsyncDisposable
 
     private bool IsHorizontal => Orientation == Orientation.Horizontal;
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(OverflowItem))]
     public FluentOverflow()
     {
         Id = Identifier.NewId();

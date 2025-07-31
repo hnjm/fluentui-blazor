@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.FluentUI.AspNetCore.Components.Utilities;
@@ -34,6 +38,11 @@ public partial class FluentInputBase<TValue>
         {
             await SetCurrentValueAsync(result ?? default);
             _notifyCalled = true;
+
+            if (FieldBound && CascadedEditContext != null)
+            {
+                _parsingValidationMessages?.Clear(); // Clear any previous errors
+            }
         }
         else
         {
@@ -56,7 +65,7 @@ public partial class FluentInputBase<TValue>
     /// </summary>
     /// <param name="e"></param>
     /// <returns></returns>
-    protected virtual async Task InputHandlerAsync(ChangeEventArgs e) // TODO: To update in all Input fields 
+    protected virtual async Task InputHandlerAsync(ChangeEventArgs e) // TODO: To update in all Input fields
     {
         if (!Immediate)
         {

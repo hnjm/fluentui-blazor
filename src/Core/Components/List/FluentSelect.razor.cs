@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components.Utilities;
 
@@ -13,13 +17,14 @@ public partial class FluentSelect<TOption> : ListComponentBase<TOption> where TO
 
     /// <summary />
     protected virtual MarkupString InlineStyleValue => new InlineStyleBuilder()
+        .AddStyle($"#{Id}::part(listbox)", "position", "relative", Multiple)
         .AddStyle($"#{Id}::part(listbox)", "max-height", Height, !string.IsNullOrWhiteSpace(Height))
         .AddStyle($"#{Id}::part(listbox)", "height", "fit-content", !string.IsNullOrWhiteSpace(Height))
-        .AddStyle($"#{Id}::part(listbox)", "z-index", ZIndex.SelectPopup.ToString())
+        .AddStyle($"#{Id}::part(listbox)", "z-index", ZIndex.SelectPopup.ToString(), !Multiple)
         .AddStyle($"#{Id}::part(selected-value)", "white-space", "nowrap")
         .AddStyle($"#{Id}::part(selected-value)", "overflow", "hidden")
         .AddStyle($"#{Id}::part(selected-value)", "text-overflow", "ellipsis")
-        .AddStyle($"#{Id}::part(selected-value)", "color", "var(--neutral-base-color)", when: !string.IsNullOrEmpty(Placeholder) && SelectedOption is null)
+        .AddStyle($"#{Id}::part(selected-value)", "color", "var(--input-placeholder-rest)", when: !string.IsNullOrEmpty(Placeholder) && SelectedOption is null)
         .BuildMarkupString();
 
     protected override string? StyleValue => new StyleBuilder(base.StyleValue)
@@ -44,6 +49,14 @@ public partial class FluentSelect<TOption> : ListComponentBase<TOption> where TO
     /// </summary>
     [Parameter]
     public Appearance? Appearance { get; set; }
+
+    /// <summary>
+    /// Called whenever the selection changed.
+    /// ⚠️ Only available when Multiple = true.
+    /// ⚠️ When using manual options, the internal data structure cannot be updated reliably, because of this, the SelectedOptionsChanged event will not be triggered.
+    /// </summary>
+    [Parameter]
+    public override EventCallback<IEnumerable<TOption>?> SelectedOptionsChanged { get; set; }
 
     private string? GetAriaLabelWithRequired()
     {

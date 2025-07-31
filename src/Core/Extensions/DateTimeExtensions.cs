@@ -1,3 +1,6 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
 using System.Globalization;
 
 namespace Microsoft.FluentUI.AspNetCore.Components.Extensions;
@@ -45,6 +48,17 @@ public static class DateTimeExtensions
     {
         var year = culture.Calendar.GetYear(self);
         return culture.Calendar.ToDateTime(year, 1, 1, 0, 0, 0, 0);
+    }
+
+    /// <summary>
+    /// Returns the last day of the year.
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="culture"></param>
+    /// <returns></returns>
+    public static DateTime EndOfYear(this DateTime self, CultureInfo culture)
+    {
+        return self.StartOfYear(culture).AddYears(1, culture).AddDays(-1, culture);
     }
 
     /// <summary>

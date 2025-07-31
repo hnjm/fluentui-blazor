@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using System.Globalization;
 using Microsoft.AspNetCore.Components;
 
@@ -17,6 +21,13 @@ public abstract class FluentCalendarBase : FluentInputBase<DateTime?>
     /// </summary>
     [Parameter]
     public virtual Func<DateTime, bool>? DisabledDateFunc { get; set; }
+
+    /// <summary>
+    /// By default, the <see cref="DisabledDateFunc" /> check only the first day of the month and the first day of the year for the Month and Year views.
+    /// Set this property to `true` to check if all days of the month and year are disabled (more time consuming).
+    /// </summary>
+    [Parameter]
+    public virtual bool DisabledCheckAllDaysOfMonthYear { get; set; }
 
     /// <summary>
     /// Apply the disabled style to the <see cref="DisabledDateFunc"/> days.

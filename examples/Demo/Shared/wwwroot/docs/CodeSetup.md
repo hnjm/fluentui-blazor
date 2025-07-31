@@ -23,7 +23,7 @@ dotnet new fluentblazorwasm --name MyApplication
 When using Visual Studio, you can also use the **New Project** dialog to create a new project. The templates will be available under the **Blazor** category.
 
 ### Manual Install
-To start using the **Fluent UI Blazor components** from scratch, you first need to install the main [Nuget package](https://www.nuget.org/packages/Microsoft.FluentUI.AspNetCore.Components/) in the project you want to use the library and its components.
+To start using the **Fluent UI** library and Razor components from scratch, you first need to install the main [NuGet package](https://www.nuget.org/packages/Microsoft.FluentUI.AspNetCore.Components/) in the project you want to use the library and its components.
 You can use the NuGet package manager in your IDE or use the following command when using a CLI:
 
 ```shell
@@ -53,7 +53,7 @@ If you would later add interactivity, the Blazor script will kick in and try to 
 
 The styles used by FluentUI are included in the package. You normally don't need to do anything to include them in your project.
 
-If needed, you can add the following line to the `<head>`> section of your `index.html`, `_Layout.cshtml` or `App.razor` file in the
+If needed, you can add the following line to the `<head>` section of your `index.html`, `_Layout.cshtml` or `App.razor` file in the
 project you installed the package in:
 
 ```html
@@ -79,18 +79,32 @@ builder.Services.AddFluentUIComponents(options =>
 
 #### Reboot 
 **Reboot** is a collection of element-specific CSS changes in a single file to help kick-start building a site with the **Fluent UI Blazor** components for Blazor. It provides an elegant, consistent, and simple baseline to build upon.
-The library automatically includes reboot through the 
+The library automatically includes reboot through the templates.
 
-If you want to use **Reboot**, you'll need to add to your `app.razor`, `index.html` or `_Layout.cshtml` file a line that includes the stylesheet (`.css` file). This can be done by adding the following line to the `<head>` section:
+If you want to use **Reboot**, and your site is not created by using our templates, you'll need to add to your `App.razor`, `index.html` or `_Layout.cshtml` file a line that includes the stylesheet (`.css` file). This can be done by adding the following line to the `<head>` section:
 
 ```html    
 <link href="_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css" rel="stylesheet" />
 ```
 
-It is entirely possible to build a site without using **Reboot**. If you do not want to use Reboot and you used the templates as a starting point, just remove the following line from the app.css file (it is the first line in the file):
+It is entirely possible to build a site without using **Reboot**. Either remove or do not add to file and it will not be used by the components.
 
+##### Reboot for IIS
+If you want to host your site on **IIS** and it is using a different base path, it is necessary to add manually the reboot css to your `App.razor`, `index.html` or `_Layout.cshtml` file.
+
+For .NET 9:
+```razor
+<link href="@Assets["_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css"]" rel="stylesheet" />
 ```
-@import '/_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css';
+
+For .NET 8:
+```razor
+<link href="_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css" rel="stylesheet" />
+```
+
+Also make sure to remove this line from `app.css`
+```css
+@import '_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css';
 ```
 
 ### Register Services
@@ -125,7 +139,7 @@ We have additional packages available that include the complete **Fluent UI Syst
 Please refer to the [Icons and Emoji](https://www.fluentui-blazor.net/IconsAndEmoji) page for more information.
 
 ## Usage
-With the package installed, you can begin using the **Fluent UI Blazor components** in the same way as any other Blazor component. 
+With the package installed, you can begin using the **Fluent UI** Razor components in the same way as any other Razor component. 
 
 ### Add Imports
 
@@ -136,7 +150,7 @@ After the package is added, you need to add the following in your  `_Imports.raz
 ```
 
 ### Quick Start
-This is literally all you need in your views to use Fluent UI Blazor components.
+This is literally all you need in your views to use Fluent UI library components in your Blazor application.
 
 ```xml
 <FluentCard>
@@ -146,7 +160,7 @@ This is literally all you need in your views to use Fluent UI Blazor components.
 ```
 
 ## Configuring the Design System
-The **Fluent UI Blazor** components are built on FAST's (Adaptive UI) technology, which enables design customization and personalization, while automatically
+The **Fluent UI** library components are built on FAST's (Adaptive UI) technology, which enables design customization and personalization, while automatically
 maintaining accessibility. This is accomplished through setting various "design tokens". The library exposes all design tokens, which you can use both from code as in a declarative way in your `.razor` pages. The different ways of working with design tokens are described in the [design tokens](https://www.fluentui-blazor.net/DesignTokens) page.
 
 ### For Right-To-Left languages

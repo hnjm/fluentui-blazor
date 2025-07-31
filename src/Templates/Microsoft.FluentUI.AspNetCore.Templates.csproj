@@ -4,15 +4,15 @@
 		<Authors>Microsoft</Authors>
 		<ContentTargetFolders>Content</ContentTargetFolders>
 		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-		<Description>Project templates for creating a Fluent UI Blazor Web app, Blazor WebAssembly Standalone app, Blazor Hybrid and Web App or .NET Aspire Starter app. These templates are pure copies of the original templates but use the Fluent UI Blazor Components ibrary for building the user interface (UI).</Description>
+		<Description>Project templates for creating a Fluent UI Blazor Web app, Blazor WebAssembly Standalone app, Blazor Hybrid and Web App or .NET Aspire Starter app. These templates are pure copies of the original templates but use the Fluent UI Blazor library for building the user interface (UI).</Description>
 		<IncludeContentInPack>true</IncludeContentInPack>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<License>MIT</License>
 		<PackageId>Microsoft.FluentUI.AspNetCore.Templates</PackageId>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/microsoft/fluentui-blazor</PackageProjectUrl>
-		<PackageTags>templates;blazor;fluentui;web-assembly</PackageTags>
-		<PackageType>Template</PackageType>
+        <PackageTags>Templates, Fluent UI, Blazor, Web Components</PackageTags>
+        <PackageType>Template</PackageType>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Title>Microsoft Fluent UI Blazor Templates</Title>
 		<PackageIcon>icon.png</PackageIcon>
@@ -24,10 +24,17 @@
 
 	<PropertyGroup>
 		<!-- for templates -->
-		<AspirePackageVersion>9.0.0</AspirePackageVersion>
-		<MicrosoftExtensionsHttpResiliencePackageVersion>9.0.0</MicrosoftExtensionsHttpResiliencePackageVersion>
-		<MicrosoftAspNetCorePackageVersionForNet8>8.0.11</MicrosoftAspNetCorePackageVersionForNet8>
-		<MicrosoftAspNetCorePackageVersionForNet9>9.0.0</MicrosoftAspNetCorePackageVersionForNet9>
+		<AspirePackageVersion>9.3.2</AspirePackageVersion>
+		<MicrosoftExtensionsHttpResiliencePackageVersion>9.7.0</MicrosoftExtensionsHttpResiliencePackageVersion>
+		<MicrosoftAspNetCorePackageVersionForNet8>8.0.18</MicrosoftAspNetCorePackageVersionForNet8>
+		<MicrosoftAspNetCorePackageVersionForNet9>9.0.7</MicrosoftAspNetCorePackageVersionForNet9>
+        <MicrosoftAspNetCorePackageVersionForNet10>10.0.0-preview.6.25358.103</MicrosoftAspNetCorePackageVersionForNet10>
+        <OpenTelemetryLTSVersion>1.9.0</OpenTelemetryLTSVersion>
+        <OpenTelemetryInstrumentationAspNetCoreVersion>1.12.0</OpenTelemetryInstrumentationAspNetCoreVersion>
+        <OpenTelemetryInstrumentationHttpVersion>1.12.0</OpenTelemetryInstrumentationHttpVersion>
+        <OpenTelemetryInstrumentationExtensionsHostingVersion>1.12.0</OpenTelemetryInstrumentationExtensionsHostingVersion>
+        <OpenTelemetryInstrumentationRuntimeVersion>1.12.0</OpenTelemetryInstrumentationRuntimeVersion>
+        <OpenTelemetryExporterOpenTelemetryProtocolVersion>1.12.0</OpenTelemetryExporterOpenTelemetryProtocolVersion>
 
 	</PropertyGroup>
 
@@ -71,7 +78,7 @@
 			<_TemplatesForPackage Include="$(IntermediateOutputPath)\content\templates\**\*" />
 		</ItemGroup>
 		<ItemGroup>
-			<Content Include="%(_TemplatesForPackage.Identity)" PackagePath="content/content/%(_TemplatesForPackage.RecursiveDir)" />
+			<Content Include="%(_TemplatesForPackage.Identity)" PackagePath="content/%(_TemplatesForPackage.RecursiveDir)" />
 		</ItemGroup>
 	</Target>
 
@@ -86,13 +93,20 @@
 		</ItemGroup>
 
 		<WriteLinesToFile File="%(TemplateProjectFiles.DestinationFile)"
-											Lines="$([System.IO.File]::ReadAllText('%(TemplateProjectFiles.FullPath)')
-																								 .Replace('!!REPLACE_WITH_LATEST_VERSION!!', '$(PackageVersion)')
-                                                 .Replace('!!REPLACE_WITH_LATEST_ASPIRE_VERSION!!', '$(AspirePackageVersion)')
-																								 .Replace('!!REPLACE_WITH_ASPNETCORE_8_VERSION!!', '$(MicrosoftAspNetCorePackageVersionForNet8)')
-																								 .Replace('!!REPLACE_WITH_ASPNETCORE_9_VERSION!!', '$(MicrosoftAspNetCorePackageVersionForNet9)')
-																								 .Replace('!!REPLACE_WITH_DOTNET_EXTENSIONS_VERSION!!', '$(MicrosoftExtensionsHttpResiliencePackageVersion)'))"
-											Overwrite="true" />
+						  Lines="$([System.IO.File]::ReadAllText('%(TemplateProjectFiles.FullPath)')
+									.Replace('!!REPLACE_WITH_LATEST_VERSION!!', '$(PackageVersion)')
+                                    .Replace('!!REPLACE_WITH_LATEST_ASPIRE_VERSION!!', '$(AspirePackageVersion)')
+									.Replace('!!REPLACE_WITH_ASPNETCORE_8_VERSION!!', '$(MicrosoftAspNetCorePackageVersionForNet8)')
+								    .Replace('!!REPLACE_WITH_ASPNETCORE_9_VERSION!!', '$(MicrosoftAspNetCorePackageVersionForNet9)')
+                                    .Replace('!!REPLACE_WITH_ASPNETCORE_10_VERSION!!', '$(MicrosoftAspNetCorePackageVersionForNet10)')
+									.Replace('!!REPLACE_WITH_DOTNET_EXTENSIONS_VERSION!!', '$(MicrosoftExtensionsHttpResiliencePackageVersion)')
+                                    .Replace('!!REPLACE_WITH_OTEL_LTS_VERSION!!', '$(OpenTelemetryLTSVersion)')
+                                    .Replace('!!REPLACE_WITH_OTEL_EXPORTER_VERSION!!', '$(OpenTelemetryExporterOpenTelemetryProtocolVersion)')
+                                    .Replace('!!REPLACE_WITH_OTEL_HOSTING_VERSION!!', '$(OpenTelemetryInstrumentationExtensionsHostingVersion)')
+                                    .Replace('!!REPLACE_WITH_OTEL_ASPNETCORE_VERSION!!', '$(OpenTelemetryInstrumentationAspNetCoreVersion)')
+                                    .Replace('!!REPLACE_WITH_OTEL_HTTP_VERSION!!', '$(OpenTelemetryInstrumentationHttpVersion)')
+                                    .Replace('!!REPLACE_WITH_OTEL_RUNTIME_VERSION!!', '$(OpenTelemetryInstrumentationRuntimeVersion)') )"
+						  Overwrite="true" />
 	</Target>
 
 	<!-- Grabs the contents of the templates folder and copies them to IntermediateOutputPath directory -->

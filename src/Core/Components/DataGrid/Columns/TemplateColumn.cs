@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -17,7 +21,7 @@ public class TemplateColumn<TGridItem> : ColumnBase<TGridItem>
     [Parameter] public RenderFragment<TGridItem> ChildContent { get; set; } = EmptyChildContent;
 
     /// <inheritdoc />
-    [Parameter] public override GridSort<TGridItem>? SortBy { get; set; }
+    [Parameter] public override IGridSort<TGridItem>? SortBy { get; set; }
 
     /// <inheritdoc />
     protected internal override void CellContent(RenderTreeBuilder builder, TGridItem item)

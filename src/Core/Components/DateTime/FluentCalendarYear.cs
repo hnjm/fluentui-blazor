@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Microsoft.FluentUI.AspNetCore.Components.Extensions;
 
 namespace Microsoft.FluentUI.AspNetCore.Components;
@@ -20,7 +24,14 @@ internal class FluentCalendarYear
         _calendar = calendar;
         Year = year.GetDay(_calendar.Culture) == 1 && year.GetMonth(_calendar.Culture) == 1 ? year : year.StartOfYear(_calendar.Culture);
 
-        _isInDisabledList = calendar.DisabledDateFunc?.Invoke(Year) ?? false;
+        if (calendar.DisabledCheckAllDaysOfMonthYear)
+        {
+            _isInDisabledList = calendar.AllDaysAreDisabled(year.StartOfYear(_calendar.Culture), year.EndOfYear(_calendar.Culture));
+        }
+        else
+        {
+            _isInDisabledList = calendar.DisabledDateFunc?.Invoke(Year) ?? false;
+        }
     }
 
     /// <summary>

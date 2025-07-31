@@ -1,5 +1,9 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Bunit;
-using FluentAssertions;
+
 using Xunit;
 
 namespace Microsoft.FluentUI.AspNetCore.Components.Tests.Badge;
@@ -42,11 +46,10 @@ public partial class FluentBadgeTests : TestContext
         // Assert
         if (appearance == Appearance.Hypertext)
         {
-            action.Should().Throw<ArgumentException>();
+            Assert.Throws<ArgumentException>(action);
         }
         else
         {
-            action.Should().NotThrow();
             cut!.Verify(suffix: appearance.ToString());
         }
     }
@@ -69,7 +72,7 @@ public partial class FluentBadgeTests : TestContext
         };
 
         // Assert
-        action.Should().ThrowExactly<ArgumentException>();
+        Assert.Throws<ArgumentException>(action);
     }
 
     [Fact]

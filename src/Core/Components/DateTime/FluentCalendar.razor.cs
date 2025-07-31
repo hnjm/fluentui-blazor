@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -444,5 +448,29 @@ public partial class FluentCalendar : FluentCalendarBase
         _selectedDatesMouseOver.AddRange(days);
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Check if all days between two dates are disabled.
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
+    internal bool AllDaysAreDisabled(DateTime start, DateTime end)
+    {
+        if (DisabledDateFunc is null)
+        {
+            return false;
+        }
+
+        for (var day = start; day <= end; day = day.AddDays(1))
+        {
+            if (!DisabledDateFunc.Invoke(day))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

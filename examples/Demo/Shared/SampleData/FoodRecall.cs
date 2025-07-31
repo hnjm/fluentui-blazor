@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 #nullable disable
 namespace FluentUI.Demo.Shared.SampleData;
 
@@ -10,6 +14,7 @@ public class FoodRecall
     public string City { get; set; }
     public string State { get; set; }
     public string Recalling_Firm { get; set; }
+    public string Termination_Date { get; set; }
 }
 
 public class FoodRecallQueryResult

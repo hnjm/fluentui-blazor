@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components.Components.Tooltip;
@@ -69,7 +73,7 @@ public partial class FluentTooltip : FluentComponentBase, IDisposable
     public string Anchor { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the delay (in milliseconds). 
+    /// Gets or sets the delay (in milliseconds).
     /// Default is 300.
     /// </summary>
     [Parameter]
@@ -116,7 +120,7 @@ public partial class FluentTooltip : FluentComponentBase, IDisposable
 
     /// <summary>
     /// Callback for when the tooltip is dismissed.
-    /// </summary>  
+    /// </summary>
     [Parameter]
     public EventCallback<EventArgs> OnDismissed { get; set; }
 
@@ -136,7 +140,7 @@ public partial class FluentTooltip : FluentComponentBase, IDisposable
     /// <summary />
     protected override void OnInitialized()
     {
-        HideTooltipOnCursorLeave = HideTooltipOnCursorLeave ?? LibraryConfiguration?.HideTooltipOnCursorLeave;
+        HideTooltipOnCursorLeave ??= LibraryConfiguration?.HideTooltipOnCursorLeave;
         _tooltipService = ServiceProvider?.GetService<ITooltipService>();
 
         if (TooltipService != null && UseTooltipService)
@@ -151,6 +155,7 @@ public partial class FluentTooltip : FluentComponentBase, IDisposable
                 Position = Position,
                 OnDismissed = OnDismissed,
                 Visible = Visible,
+                AdditionalAttributes = AdditionalAttributes,
             });
         }
     }

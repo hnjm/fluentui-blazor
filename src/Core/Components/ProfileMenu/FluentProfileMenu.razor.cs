@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------------
-// MIT License - Copyright (c) Microsoft Corporation. All rights reserved.
+// This file is licensed to you under the MIT License.
 // ------------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Components;
@@ -26,6 +26,12 @@ public partial class FluentProfileMenu : FluentComponentBase
     /// </summary>
     [Parameter]
     public bool Open { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the callback that is invoked when the open state changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
 
     /// <summary>
     /// Gets or sets whether popover should be forced to top right or top left (RTL).
@@ -165,4 +171,19 @@ public partial class FluentProfileMenu : FluentComponentBase
 
     /// <summary />
     private string PersonaId => $"{Id}-persona";
+
+    private async Task ProfileMenuClickedAsync()
+    {
+        Open = !Open;
+        await OpenChangedHandlerAsync();
+    }
+
+    /// <summary />
+    private async Task OpenChangedHandlerAsync()
+    {
+        if (OpenChanged.HasDelegate)
+        {
+            await OpenChanged.InvokeAsync(Open);
+        }
+    }
 }

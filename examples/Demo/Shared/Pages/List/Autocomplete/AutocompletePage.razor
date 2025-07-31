@@ -6,11 +6,19 @@
 
 <h1>Autocomplete</h1>
 
+<blockquote>
+    @(new MarkupString(DemoNavProvider.EditFormOffIcon))
+    The <b>FluentAutocomplete</b> component is not yet fully compatible with the <code>EditForm</code> and <code>FluentEditForm</code> elements.
+    Some functionalities, such as error messages, the requirement message or the validation messages are missing.
+</blockquote>
+
 <h2 id="example">Examples</h2>
 
 <DemoSection Title="Default" Component="@typeof(AutocompleteDefault)" />
 
 <DemoSection Title="Customized options" Component="@typeof(AutocompleteCustomized)" />
+
+<DemoSection Title="Multiple == false" Component="@typeof(AutoCompleteMaxSingleItem)" />
 
 <DemoSection Title="Many Items" Component="@typeof(AutocompleteManyItems)">
     <Description>
@@ -20,11 +28,29 @@
     </Description>
 </DemoSection>
 
+<DemoSection Title="Close via code" Component="@typeof(AutocompleteCloseViaCode)">
+    <Description>
+        <p>
+            This example demonstrates how to close the dropdown in code.
+        </p>
+    </Description>
+</DemoSection>
+
+<DemoSection Title="Different object instances from search results" Component="@typeof(AutocompleteDifferentObjectInstances)">
+    <Description>
+        <p>
+            By default the <code>FluentAutocomplete</code> component compares the search results by instance with it's internal selected items. You can control that behaviour by providing the <code>OptionComparer</code> parameter.
+        </p>
+    </Description>
+</DemoSection>
+
 <h2 id="documentation">Documentation</h2>
 
 <ApiDocumentation Component="typeof(FluentAutocomplete<>)" GenericLabel="TOption" />
 
 <ApiDocumentation Component="typeof(FluentPersona)" />
+
+<MarkdownSection FromAsset="./_content/FluentUI.Demo.Shared/docs/PlaceholderAutofill.md" />
 
 <h2>Accessibility</h2>
 

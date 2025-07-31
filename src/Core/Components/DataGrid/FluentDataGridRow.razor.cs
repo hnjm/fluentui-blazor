@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------------
-// MIT License - Copyright (c) Microsoft Corporation. All rights reserved.
+// This file is licensed to you under the MIT License.
 // ------------------------------------------------------------------------
 
 using Microsoft.AspNetCore.Components;
@@ -62,6 +62,11 @@ public partial class FluentDataGridRow<TGridItem> : FluentComponentBase, IHandle
     /// Gets a reference to the enclosing <see cref="FluentDataGrid{TGridItem}" />.
     /// </summary>
     protected FluentDataGrid<TGridItem> Grid => InternalGridContext.Grid;
+
+    /// <summary>
+    /// Gets the columns associated with this data grid row.
+    /// </summary>
+    public IReadOnlyList<ColumnBase<TGridItem>> Columns => Grid._columns;
 
     protected string? ClassValue => new CssBuilder(Class)
         .AddClass("fluent-data-grid-row")

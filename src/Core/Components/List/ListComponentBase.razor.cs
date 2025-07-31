@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------------
-// MIT License - Copyright (c) Microsoft Corporation. All rights reserved.
+// This file is licensed to you under the MIT License.
 // ------------------------------------------------------------------------
 
 using System.Diagnostics.CodeAnalysis;
@@ -130,6 +130,13 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
     public virtual Func<TOption, bool>? OptionSelected { get; set; }
 
     /// <summary>
+    /// Gets or sets the <see cref="IEqualityComparer{T}"/> used to determine if an option is already added to the internal list.
+    /// ⚠️ Only available when Multiple = true.
+    /// </summary>
+    [Parameter]
+    public virtual IEqualityComparer<TOption>? OptionComparer { get; set; }
+
+    /// <summary>
     /// Gets or sets the content source of all items to display in this list.
     /// Each item must be instantiated (cannot be null).
     /// </summary>
@@ -215,101 +222,101 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
     {
         parameters.SetParameterProperties(this);
 
-        if (!_hasInitializedParameters)
+        if (!Multiple)
         {
-            if (!Multiple)
+            bool isSetSelectedOption = false, isSetValue = false;
+            TOption? newSelectedOption = default;
+            string? newValue = null;
+
+            foreach (var parameter in parameters)
             {
-                bool isSetSelectedOption = false, isSetValue = false;
-                TOption? newSelectedOption = default;
-                string? newValue = null;
-
-                foreach (var parameter in parameters)
+                switch (parameter.Name)
                 {
-                    switch (parameter.Name)
-                    {
-                        case nameof(SelectedOption):
-                            isSetSelectedOption = true;
-                            newSelectedOption = (TOption?)parameter.Value;
-                            break;
-                        case nameof(Value):
-                            isSetValue = true;
-                            newValue = (string?)parameter.Value;
-                            break;
-                        case nameof(Items):
-                            if (Items is not null && OptionSelected is not null)
-                            {
-                                newSelectedOption = Items.FirstOrDefault(i => OptionSelected?.Invoke(i) == true);
-                                newValue = GetOptionValue(newSelectedOption);
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                if (newSelectedOption is not null || newValue is not null || Value is not null)
-                {
-                    if (isSetSelectedOption && !Equals(_currentSelectedOption, newSelectedOption))
-                    {
-                        if (Items != null)
+                    case nameof(SelectedOption):
+                        isSetSelectedOption = true;
+                        newSelectedOption = (TOption?)parameter.Value;
+                        break;
+                    case nameof(Value):
+                        isSetValue = true;
+                        newValue = (string?)parameter.Value;
+                        break;
+                    case nameof(Items):
+                        if (Items is not null && OptionSelected is not null)
                         {
-                            if (Items.Contains(newSelectedOption))
-                            {
-                                _currentSelectedOption = newSelectedOption;
-                                // Make value follow new selected option
-                                Value = GetOptionValue(_currentSelectedOption);
-                                await ValueChanged.InvokeAsync(Value);
-                            }
-                            else
-                            {
-                                // If the selected option is not in the list of items, reset the selected option
-                                _currentSelectedOption = SelectedOption = default;
-                                // and also reset the value
-                                Value = null;
-                                await SelectedOptionChanged.InvokeAsync(SelectedOption);
-                            }
+                            newSelectedOption = Items.FirstOrDefault(i => OptionSelected?.Invoke(i) == true);
+                            newValue = GetOptionValue(newSelectedOption);
                         }
-                        else
-                        {
-                            // If Items is null, we don't know if the selected option is in the list of items, so we just set it
-                            _currentSelectedOption = newSelectedOption;
-                        }
-                    }
-
-                    if (isSetValue && newValue is null)
-                    {
-                        // Check if one of the Items is selected
-                        if (Items is not null)
-                        {
-                            newSelectedOption = Items.FirstOrDefault(item => OptionSelected?.Invoke(item) == true);
-                            if (newSelectedOption is not null)
-                            {
-                                _currentSelectedOption = SelectedOption = newSelectedOption;
-                                newValue = GetOptionValue(_currentSelectedOption);
-                            }
-                        }
-
-                        if (newValue is null)
-                        {
-                            // If the selected option is not in the list of items, reset the selected option
-                            _currentSelectedOption = SelectedOption = default;
-
-                            if (this is not FluentCombobox<TOption>)
-                            {
-                                Value = null;
-                                await ValueChanged.InvokeAsync(Value);
-                            }
-                        }
-                        else
-                        {
-                            Value = newValue;
-                            await ValueChanged.InvokeAsync(Value);
-                        }
-                        await SelectedOptionChanged.InvokeAsync(SelectedOption);
-                    }
+                        break;
+                    default:
+                        break;
                 }
             }
 
+            if (newSelectedOption is not null || newValue is not null || Value is not null)
+            {
+                if (isSetSelectedOption && !Equals(_currentSelectedOption, newSelectedOption))
+                {
+                    if (Items != null)
+                    {
+                        if (Items.Contains(newSelectedOption))
+                        {
+                            _currentSelectedOption = newSelectedOption;
+                            // Make value follow new selected option
+                            Value = GetOptionValue(_currentSelectedOption);
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                        else
+                        {
+                            // If the selected option is not in the list of items, reset the selected option
+                            _currentSelectedOption = SelectedOption = default;
+                            // and also reset the value
+                            Value = null;
+                            await SelectedOptionChanged.InvokeAsync(SelectedOption);
+                        }
+                    }
+                    else
+                    {
+                        // If Items is null, we don't know if the selected option is in the list of items, so we just set it
+                        _currentSelectedOption = newSelectedOption;
+                    }
+                }
+
+                if (isSetValue && newValue is null)
+                {
+                    // Check if one of the Items is selected
+                    if (Items is not null)
+                    {
+                        newSelectedOption = Items.FirstOrDefault(item => OptionSelected?.Invoke(item) == true);
+                        if (newSelectedOption is not null)
+                        {
+                            _currentSelectedOption = SelectedOption = newSelectedOption;
+                            newValue = GetOptionValue(_currentSelectedOption);
+                        }
+                    }
+
+                    if (newValue is null)
+                    {
+                        // If the selected option is not in the list of items, reset the selected option
+                        _currentSelectedOption = SelectedOption = default;
+
+                        if (this is not FluentCombobox<TOption>)
+                        {
+                            Value = null;
+                            await ValueChanged.InvokeAsync(Value);
+                        }
+                    }
+                    else
+                    {
+                        Value = newValue;
+                        await ValueChanged.InvokeAsync(Value);
+                    }
+                    await SelectedOptionChanged.InvokeAsync(SelectedOption);
+                }
+            }
+        }
+
+        if (!_hasInitializedParameters)
+        {
             if (SelectedOptionExpression is not null)
             {
                 FieldIdentifier = FieldIdentifier.Create(SelectedOptionExpression);
@@ -369,7 +376,7 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(Value) && (InternalValue is null || InternalValue != Value))
+        if (!Multiple && !string.IsNullOrWhiteSpace(Value) && (InternalValue is null || InternalValue != Value))
         {
             InternalValue = Value;
         }
@@ -490,7 +497,7 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
     {
         if (item != null)
         {
-            return OptionValue.Invoke(item) ?? OptionText.Invoke(item) ?? item.ToString();
+            return OptionValue?.Invoke(item) ?? OptionText?.Invoke(item) ?? item?.ToString();
         }
         else
         {
@@ -533,9 +540,14 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
 
         if (Multiple)
         {
-            if (_selectedOptions.Contains(item))
+            if (OptionComparer is null && _selectedOptions.Contains(item))
             {
                 RemoveSelectedItem(item);
+                await RaiseChangedEventsAsync();
+            }
+            else if (OptionComparer is not null && _selectedOptions.Find(x => OptionComparer.Equals(x, item)) is TOption addedItem)
+            {
+                RemoveSelectedItem(addedItem);
                 await RaiseChangedEventsAsync();
             }
             else
@@ -554,6 +566,14 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
             {
                 SelectedOption = item;
                 InternalValue = GetOptionValue(item);
+                await RaiseChangedEventsAsync();
+            }
+
+            // For Autocomplete, allow to unselect the item if it is already selected
+            else if (this is FluentAutocomplete<TOption>)
+            {
+                SelectedOption = default;
+                InternalValue = GetOptionValue(default);
                 await RaiseChangedEventsAsync();
             }
         }
@@ -575,6 +595,11 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
             {
                 await SelectedOptionChanged.InvokeAsync(SelectedOption);
             }
+        }
+
+        if (FieldBound)
+        {
+            EditContext?.NotifyFieldChanged(FieldIdentifier);
         }
 
         await base.ChangeHandlerAsync(new ChangeEventArgs() { Value = InternalValue });
@@ -601,7 +626,7 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
         {
             return;
         }
-        if (!ChangeOnEnterOnly || (ChangeOnEnterOnly && e.Code == "Enter"))
+        if (!ChangeOnEnterOnly || (ChangeOnEnterOnly && e.Code == nameof(KeyCode.Enter)))
         {
             await item.OnClickHandlerAsync();
         }
@@ -613,6 +638,12 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
         if (item == null)
         {
             return false;
+        }
+
+        if (this is FluentAutocomplete<TOption> && SelectedOption is not null)
+        {
+            SelectedOption = default;
+            InternalValue = GetOptionValue(default);
         }
 
         return _selectedOptions.Remove(item);

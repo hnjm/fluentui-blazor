@@ -1,11 +1,11 @@
 // ------------------------------------------------------------------------
-// MIT License - Copyright (c) Microsoft Corporation. All rights reserved.
+// This file is licensed to you under the MIT License.
 // ------------------------------------------------------------------------
 
 namespace Microsoft.FluentUI.AspNetCore.Components;
 
 /// <summary>
-/// Custom icon loaded from <see cref="IconsExtensions.GetInstance(IconInfo)"/>
+/// Custom icon loaded from <see cref="IconsExtensions.GetInstance(IconInfo, bool?)"/>
 /// </summary>
 public class CustomIcon : Icon
 {

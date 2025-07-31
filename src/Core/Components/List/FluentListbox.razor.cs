@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components.Utilities;
 
@@ -11,6 +15,14 @@ public partial class FluentListbox<TOption> : ListComponentBase<TOption> where T
     /// </summary>
     [Parameter]
     public int Size { get; set; }
+
+    /// <summary>
+    /// Called whenever the selection changed.
+    /// ⚠️ Only available when Multiple = true.
+    /// ⚠️ When using manual options, the internal data structure cannot be updated reliably, because of this, the SelectedOptionsChanged event will not be triggered.
+    /// </summary>
+    [Parameter]
+    public override EventCallback<IEnumerable<TOption>?> SelectedOptionsChanged { get; set; }
 
     /// <summary />
     protected virtual StyleBuilder BorderStyle => new StyleBuilder()

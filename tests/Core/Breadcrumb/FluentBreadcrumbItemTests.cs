@@ -1,5 +1,9 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Bunit;
-using FluentAssertions;
+
 using Xunit;
 
 namespace Microsoft.FluentUI.AspNetCore.Components.Tests.Breadcrumb;
@@ -133,11 +137,10 @@ public class FluentBreadcrumbItemTests : TestBase
         // Assert
         if (targetAttribute == "invalid")
         {
-            action.Should().Throw<ArgumentException>();
+            Assert.Throws<ArgumentException>(action);
         }
         else
         {
-            action.Should().NotThrow();
             cut!.Verify(suffix: targetAttribute);
         }
     }

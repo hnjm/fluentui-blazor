@@ -1,5 +1,9 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Bunit;
-using FluentAssertions;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components.Tests.Extensions;
 using Xunit;
@@ -165,7 +169,7 @@ public partial class FluentButtonTests : TestContext
         };
 
         // Assert
-        action.Should().Throw<ArgumentException>();
+        Assert.Throws<ArgumentException>(action);
     }
 
     [Theory]

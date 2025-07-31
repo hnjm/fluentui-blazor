@@ -1,5 +1,5 @@
 // ------------------------------------------------------------------------
-// MIT License - Copyright (c) Microsoft Corporation. All rights reserved.
+// This file is licensed to you under the MIT License.
 // ------------------------------------------------------------------------
 
 using System.Diagnostics;
@@ -30,11 +30,11 @@ public partial class DemoSearch : IAsyncDisposable
 
     public Task OnKeyDownAsync(FluentKeyCodeEventArgs args)
     {
-        if (args is not null && args.Key == KeyCode.Slash)
+        if (args is not null && args.Value == "/" && _searchAutocomplete is not null)
         {
-            _searchAutocomplete?.Element?.FocusAsync();
+            _searchAutocomplete.Element?.FocusAsync();
+            _searchAutocomplete.ValueText = "";
         }
-        //StateHasChanged();
         return Task.CompletedTask;
     }
 

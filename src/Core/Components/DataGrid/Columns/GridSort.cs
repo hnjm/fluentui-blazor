@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using System.Linq.Expressions;
 
 namespace Microsoft.FluentUI.AspNetCore.Components;
@@ -6,7 +10,7 @@ namespace Microsoft.FluentUI.AspNetCore.Components;
 /// Represents a sort order specification used within <see cref="FluentDataGrid{TGridItem}"/>.
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
-public sealed class GridSort<TGridItem>
+public sealed class GridSort<TGridItem> : IGridSort<TGridItem>
 {
     private const string ExpressionNotRepresentableMessage = "The supplied expression can't be represented as a property name for sorting. Only simple member expressions, such as @(x => x.SomeProperty), can be converted to property names.";
 
@@ -38,7 +42,7 @@ public sealed class GridSort<TGridItem>
             (expression, true));
 
     /// <summary>
-    /// Produces a <see cref="GridSort{T}"/> instance that sorts according to the specified <paramref name="expression"/> 
+    /// Produces a <see cref="GridSort{T}"/> instance that sorts according to the specified <paramref name="expression"/>
     /// using the specified <paramref name="comparer"/>, ascending.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
@@ -60,7 +64,7 @@ public sealed class GridSort<TGridItem>
             (expression, false));
 
     /// <summary>
-    /// Produces a <see cref="GridSort{T}"/> instance that sorts according to the specified <paramref name="expression"/> 
+    /// Produces a <see cref="GridSort{T}"/> instance that sorts according to the specified <paramref name="expression"/>
     /// using the specified <paramref name="comparer"/>, descending.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
@@ -196,7 +200,7 @@ public sealed class GridSort<TGridItem>
         return this;
     }
 
-    internal IOrderedQueryable<TGridItem> Apply(IQueryable<TGridItem> queryable, bool ascending)
+    public IOrderedQueryable<TGridItem> Apply(IQueryable<TGridItem> queryable, bool ascending)
     {
         var orderedQueryable = _first(queryable, ascending);
 
@@ -211,7 +215,7 @@ public sealed class GridSort<TGridItem>
         return orderedQueryable;
     }
 
-    internal IReadOnlyCollection<SortedProperty> ToPropertyList(bool ascending)
+    public IReadOnlyCollection<SortedProperty> ToPropertyList(bool ascending)
     {
         if (ascending)
         {

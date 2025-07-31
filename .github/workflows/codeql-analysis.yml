@@ -43,10 +43,11 @@ jobs:
         dotnet-version: |
             8.0.x
             9.0.x
-        dotnet-quality: ga
+            10.0.x
+        dotnet-quality: preview
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
 
@@ -56,4 +57,4 @@ jobs:
         dotnet build Microsoft.FluentUI.sln
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3

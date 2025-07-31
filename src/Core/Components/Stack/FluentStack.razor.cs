@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components.Utilities;
 
@@ -44,6 +48,12 @@ public partial class FluentStack : FluentComponentBase
     /// </summary>
     [Parameter]
     public Orientation Orientation { get; set; } = Orientation.Horizontal;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the stack is reversed.
+    /// </summary>
+    [Parameter]
+    public bool? Reversed { get; set; }
 
     /// <summary>
     /// Gets or sets the width of the stack as a percentage string (default = 100%).

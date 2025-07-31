@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.FluentUI.AspNetCore.Components.Extensions;
@@ -22,6 +26,7 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
     private Virtualize<TOption>? VirtualizationContainer { get; set; }
     private readonly Debounce _debounce = new();
     private bool _shouldRender = true;
+    private bool _inProgress;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FluentAutocomplete{TOption}"/> class.
@@ -57,6 +62,12 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
     public EventCallback<string> ValueTextChanged { get; set; }
 
     /// <summary>
+    /// Gets or sets the position of the options popup.
+    /// </summary>
+    [Parameter]
+    public SelectPosition? Position { get; set; }
+
+    /// <summary>
     /// Gets or sets the value of the input. This should be used with two-way binding.
     /// For the FluentAutocomplete component, use the <see cref="ValueText"/> property instead.
     /// </summary>
@@ -68,28 +79,6 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
     {
         get => ValueText;
         set => base.Value = ValueText;
-    }
-
-    /// <summary>
-    /// For <see cref="FluentAutocomplete{TOption}"/>, this property must be True.
-    /// Set the <see cref="MaximumSelectedOptions"/> property to 1 to select just one item.
-    /// </summary>
-    public override bool Multiple
-    {
-        get
-        {
-            return base.Multiple;
-        }
-
-        set
-        {
-            if (value == false)
-            {
-                throw new ArgumentException("For FluentAutocomplete, this property must be True. Set the MaximumSelectedOptions property to 1 to select just one item.");
-            }
-
-            base.Multiple = true;
-        }
     }
 
     /// <summary>
@@ -154,13 +143,13 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
     /// Gets or sets the header content, placed at the top of the popup panel.
     /// </summary>
     [Parameter]
-    public RenderFragment<IEnumerable<TOption>>? HeaderContent { get; set; }
+    public RenderFragment<HeaderFooterContent<TOption>>? HeaderContent { get; set; }
 
     /// <summary>
     /// Gets or sets the footer content, placed at the bottom of the popup panel.
     /// </summary>
     [Parameter]
-    public RenderFragment<IEnumerable<TOption>>? FooterContent { get; set; }
+    public RenderFragment<HeaderFooterContent<TOption>>? FooterContent { get; set; }
 
     /// <summary>
     /// Gets or sets the title and Aria-Label for the Scroll to previous button.
@@ -191,6 +180,14 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
     /// </summary>
     [Parameter]
     public bool ShowOverlayOnEmptyResults { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether the component will display a progress indicator while fetching data.
+    /// A progress ring will be shown ad the end of the component, when the <see cref="OnOptionsSearch"/> is invoked.
+    /// You can customize the progress indicator by using the <see cref="HeaderContent"/> or <see cref="FooterContent"/> parameters: see <see cref="HeaderFooterContent{TOption}.InProgress"/>.
+    /// </summary>
+    [Parameter]
+    public bool ShowProgressIndicator { get; set; }
 
     /// <summary>
     /// If true, the options list will be rendered with virtualization. This is normally used in conjunction with
@@ -239,6 +236,8 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
         .AddStyle("display", "none", when: (Items == null || !Items.Any()) && (HeaderContent != null || FooterContent != null))
         .Build();
 
+    private bool GetSingleSelect() => Multiple == false && SelectedOption is not null;
+
     /// <summary />
     private string ComponentWidth
     {
@@ -280,6 +279,16 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
     /// <summary />
     protected override bool ShouldRender() => _shouldRender;
 
+    /// <summary>
+    /// Closes the multiselect dropdown.
+    /// </summary>
+    /// <returns></returns>
+    public async Task CloseDropdownAsync()
+    {
+        IsMultiSelectOpened = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
     /// <summary />
     protected override async Task InputHandlerAsync(ChangeEventArgs e)
     {
@@ -287,6 +296,9 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
         {
             return;
         }
+
+        _inProgress = true;
+        StateHasChanged();
 
         _shouldRender = false;
 
@@ -296,12 +308,31 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
         if (MaximumSelectedOptions > 0 && SelectedOptions?.Count() >= MaximumSelectedOptions)
         {
             IsReachedMaxItems = true;
-            RenderComponent();
+            await RenderComponentAsync();
             return;
         }
 
         IsReachedMaxItems = false;
         IsMultiSelectOpened = true;
+
+        if (ImmediateDelay > 0)
+        {
+            await _debounce.RunAsync(ImmediateDelay, () => InvokeAsync(() => InvokeOptionsSearchAsync()));
+        }
+        else
+        {
+            await InvokeOptionsSearchAsync();
+        }
+    }
+
+    /// <summary>
+    /// Performs the search operation and displays the available values. The search takes into account any previously
+    /// entered text which has updated the <see cref="ValueText"/>.
+    /// </summary>
+    /// <returns></returns>
+    public async Task InvokeOptionsSearchAsync()
+    {
+        _inProgress = true;
 
         var args = new OptionsSearchEventArgs<TOption>()
         {
@@ -309,19 +340,12 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
             Text = ValueText,
         };
 
-        if (ImmediateDelay > 0)
-        {
-            await _debounce.RunAsync(ImmediateDelay, () => InvokeAsync(() => OnOptionsSearch.InvokeAsync(args)));
-        }
-        else
-        {
-            await OnOptionsSearch.InvokeAsync(args);
-        }
+        await OnOptionsSearch.InvokeAsync(args);
 
         Items = args.Items?.Take(MaximumOptionsSearch);
 
         SelectableItem = Items != null
-            ? Items.FirstOrDefault()
+            ? Items.FirstOrDefault(i => OptionDisabled is null ? true : OptionDisabled.Invoke(i) == false)
             : default;
 
         if (VirtualizationContainer != null)
@@ -329,14 +353,14 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
             await VirtualizationContainer.RefreshDataAsync();
         }
 
-        RenderComponent();
+        _inProgress = false;
+        await RenderComponentAsync();
+    }
 
-        // Activate the rendering
-        void RenderComponent()
-        {
-            _shouldRender = true;
-            StateHasChanged();
-        }
+    private async Task RenderComponentAsync()
+    {
+        _shouldRender = true;
+        await InvokeAsync(StateHasChanged);
     }
 
     private ValueTask<ItemsProviderResult<TOption>> LoadFilteredItemsAsync(ItemsProviderRequest request)
@@ -430,14 +454,15 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
             }
 
             // Remove last char
-            if (!string.IsNullOrEmpty(ValueText))
-            {
-                await InputHandlerAsync(new ChangeEventArgs()
-                {
-                    Value = ValueText[..^1],
-                });
-                return;
-            }
+            // -> Commented to fix #3359
+            // if (!string.IsNullOrEmpty(ValueText))
+            // {
+            //     await InputHandlerAsync(new ChangeEventArgs()
+            //     {
+            //         Value = ValueText[..^1],
+            //     });
+            //     return;
+            // }
         }
 
         // ArrowUp
@@ -535,6 +560,7 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
     {
         RemoveAllSelectedItems();
         ValueText = string.Empty;
+        SelectedOption = default;
         await RaiseValueTextChangedAsync(ValueText);
         await RaiseChangedEventsAsync();
 
@@ -551,6 +577,13 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
         await RaiseValueTextChangedAsync(ValueText);
 
         await base.OnSelectedItemChangedHandlerAsync(item);
+
+        // In Single mode, set the focus on the input field
+        if (!Multiple && Module != null)
+        {
+            await Module.InvokeVoidAsync("focusOn", $"{Id}-single");
+        }
+
         await DisplayLastSelectedItemAsync();
 
         if (MustBeClosed())
@@ -640,6 +673,18 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
 
     }
 
+    /// <summary>
+    /// Gets the position of the popup.
+    /// </summary>
+    /// <returns></returns>
+    private VerticalPosition? GetVerticalPosition()
+            => Position switch
+            {
+                SelectPosition.Above => VerticalPosition.Top,
+                SelectPosition.Below => VerticalPosition.Bottom,
+                _ => VerticalPosition.Unset,
+            };
+
     /// <summary />
     private bool MustBeClosed()
     {
@@ -660,4 +705,24 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
 
         return false;
     }
+}
+
+/// <summary />
+public class HeaderFooterContent<TOption>
+{
+    internal HeaderFooterContent(IEnumerable<TOption>? items, bool inProgress)
+    {
+        Items = items ?? Array.Empty<TOption>();
+        InProgress = inProgress;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the operation is currently in progress.
+    /// </summary>
+    public bool InProgress { get; init; }
+
+    /// <summary>
+    /// Gets the items to display in the header or footer.
+    /// </summary>
+    public IEnumerable<TOption> Items { get; init; }
 }

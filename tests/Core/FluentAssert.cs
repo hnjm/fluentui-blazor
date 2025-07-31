@@ -1,9 +1,13 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using Bunit;
 using Bunit.Rendering;
-using FluentAssertions;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.FluentUI.AspNetCore.Components.Tests;

@@ -1,3 +1,7 @@
+// ------------------------------------------------------------------------
+// This file is licensed to you under the MIT License.
+// ------------------------------------------------------------------------
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.FluentUI.AspNetCore.Components.Extensions;
@@ -12,7 +16,7 @@ public partial class FluentInputFile : FluentComponentBase, IAsyncDisposable
     private ElementReference? _containerElement;
     private InputFile? _inputFile;
     private IJSObjectReference? _containerInstance;
-    
+
     public static string ResourceLoadingBefore = "Loading...";
     public static string ResourceLoadingCompleted = "Completed";
     public static string ResourceLoadingCanceled = "Canceled";
@@ -66,14 +70,14 @@ public partial class FluentInputFile : FluentComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Gets or sets the maximum size of a file to be uploaded (in bytes).
-    /// Default value is 10 MB.
+    /// Default value is 10 MiB.
     /// </summary>
     [Parameter]
     public long MaximumFileSize { get; set; } = 10 * 1024 * 1024;
 
     /// <summary>
     /// Gets or sets the sze of buffer to read bytes from uploaded file (in bytes).
-    /// Default value is 10 KB.
+    /// Default value is 10 KiB.
     /// </summary>
     [Parameter]
     public uint BufferSize { get; set; } = 10 * 1024;
@@ -97,6 +101,7 @@ public partial class FluentInputFile : FluentComponentBase, IAsyncDisposable
     /// Gets or sets the type of file reading.
     /// For SaveToTemporaryFolder, use <see cref="FluentInputFileEventArgs.LocalFile" /> to retrieve the file.
     /// For Buffer, use <see cref="FluentInputFileEventArgs.Buffer" /> to retrieve bytes.
+    /// For Stream, use <see cref="FluentInputFileEventArgs.Stream"/> to have full control over retrieving the file.
     /// </summary>
     [Parameter]
     public InputFileMode Mode { get; set; } = InputFileMode.SaveToTemporaryFolder;
@@ -403,7 +408,7 @@ public partial class FluentInputFile : FluentComponentBase, IAsyncDisposable
 
     private Task UpdateProgressAsync(long current, long size, string title)
     {
-        return UpdateProgressAsync(Convert.ToInt32(decimal.Divide(current, size) * 100), title);
+        return UpdateProgressAsync(Convert.ToInt32(decimal.Divide(current, size <= 0 ? 1 : size) * 100), title);
     }
 
     private async Task UpdateProgressAsync(int percent, string title)
@@ -427,15 +432,24 @@ public partial class FluentInputFile : FluentComponentBase, IAsyncDisposable
     // Unregister the drop zone events
     public async ValueTask DisposeAsync()
     {
-        if (_containerInstance != null)
+        try
         {
-            await _containerInstance.InvokeVoidAsync("dispose");
-            await _containerInstance.DisposeAsync();
-        }
+            if (_containerInstance is not null)
+            {
+                await _containerInstance.InvokeVoidAsync("dispose");
+                await _containerInstance.DisposeAsync().ConfigureAwait(false);
+            }
 
-        if (Module != null)
+            if (Module != null)
+            {
+                await Module.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException ||
+                                   ex is OperationCanceledException)
         {
-            await Module.DisposeAsync();
+            // The JSRuntime side may routinely be gone already if the reason we're disposing is that
+            // the client disconnected. This is not an error.
         }
     }
 }
