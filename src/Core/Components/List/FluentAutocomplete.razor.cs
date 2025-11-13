@@ -543,6 +543,7 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
         if (firstRender)
         {
             Module = await JS.InvokeAsync<IJSObjectReference>("import", JAVASCRIPT_FILE.FormatCollocatedUrl(LibraryConfiguration));
+            await Module.InvokeVoidAsync("initialize", Id);
         }
     }
 
@@ -704,6 +705,32 @@ public partial class FluentAutocomplete<TOption> : ListComponentBase<TOption> wh
         }
 
         return false;
+    }
+
+    /// <inheritdoc />
+    public override void FocusAsync()
+    {
+        if (Multiple)
+        {
+            Element?.FocusAsync();
+        }
+        else
+        {
+            OnDropDownExpandedAsync();
+        }
+    }
+
+    /// <inheritdoc />
+    public override void FocusAsync(bool preventScroll)
+    {
+        if (Multiple)
+        {
+            Element?.FocusAsync(preventScroll);
+        }
+        else
+        {
+            OnDropDownExpandedAsync();
+        }
     }
 }
 

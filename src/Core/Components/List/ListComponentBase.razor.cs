@@ -115,7 +115,7 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
     /// Only for <see cref="FluentListbox{TOption}"/> and <see cref="FluentSelect{TOption}"/> components.
     /// </summary>
     [Parameter]
-    public virtual Func<TOption, string?> OptionValue { get; set; }
+    public virtual Func<TOption, string?>? OptionValue { get; set; }
 
     /// <summary>
     /// Gets or sets the function used to determine if an option is disabled.
@@ -128,6 +128,13 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
     /// </summary>
     [Parameter]
     public virtual Func<TOption, bool>? OptionSelected { get; set; }
+
+    /// <summary>
+    /// Gets or sets the function used to determine the option tooltip (title).
+    /// If null is returned, then no title is displayed.
+    /// </summary>
+    [Parameter]
+    public virtual Func<TOption, string?>? OptionTitle { get; set; }
 
     /// <summary>
     /// Gets or sets the <see cref="IEqualityComparer{T}"/> used to determine if an option is already added to the internal list.
@@ -206,14 +213,13 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
     public Expression<Func<IEnumerable<TOption>>>? SelectedOptionsExpression { get; set; }
 
     /// <summary />
-    public ListComponentBase()
+    protected ListComponentBase()
     {
         _internalListContext = new(this);
 
         Id = Identifier.NewId();
 
         OptionText = (item) => item?.ToString() ?? null;
-        OptionValue = (item) => OptionText.Invoke(item) ?? item?.ToString() ?? null;
 
         _renderOptions = RenderOptions;
     }
@@ -477,13 +483,17 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
             {
                 return OptionSelected.Invoke(item);
             }
-            else if (SelectedOption == null)
+            else if (SelectedOption == null && string.IsNullOrEmpty(Value))
             {
                 return false;
             }
             else if (OptionValue != null && SelectedOption != null)
             {
                 return GetOptionValue(item) == GetOptionValue(SelectedOption);
+            }
+            else if (!string.IsNullOrEmpty(Value))
+            {
+                return string.Equals(GetOptionValue(item), Value, StringComparison.Ordinal);
             }
             else
             {
@@ -498,6 +508,19 @@ public abstract partial class ListComponentBase<TOption> : FluentInputBase<strin
         if (item != null)
         {
             return OptionValue?.Invoke(item) ?? OptionText?.Invoke(item) ?? item?.ToString();
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /// <summary />
+    protected virtual string? GetOptionTitle(TOption? item)
+    {
+        if (item != null && OptionTitle != null)
+        {
+            return OptionTitle.Invoke(item);
         }
         else
         {
